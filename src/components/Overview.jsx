@@ -9,7 +9,9 @@ function timeAgo(str) {
 }
 
 function initial(name) {
-  return name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?'
+  if (!name) return '?'
+  if (name.length <= 2) return name.toUpperCase()
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 }
 
 export default function Overview({ phases, onSelectPhase }) {

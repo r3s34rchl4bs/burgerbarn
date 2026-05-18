@@ -31,9 +31,10 @@ export default function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       <Header />
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto w-full px-4 py-8">
         <button
           onClick={() => navigate('/')}
           className="text-gray-400 hover:text-gray-700 text-sm mb-6 flex items-center gap-1 transition-colors"
@@ -116,6 +117,7 @@ export default function AdminPage() {
               {addUser.isPending ? 'Adding…' : 'Add partner'}
             </button>
           </form>
+        </div>
         </div>
       </main>
     </div>

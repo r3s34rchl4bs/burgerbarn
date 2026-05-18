@@ -11,7 +11,9 @@ export default function Header() {
   }
 
   const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    ? (user.name.length <= 2
+        ? user.name.toUpperCase()
+        : user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2))
     : '?'
 
   return (
