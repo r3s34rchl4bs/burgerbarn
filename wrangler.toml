@@ -1,0 +1,8 @@
+name = "burgerbarn"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "burgerbarn"
+database_id = "88b4c2ca-4c98-44f8-ba93-e6a2775dca6f"

@@ -1,0 +1,29 @@
+{
+  "name": "burgerbarn",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev --compatibility-date=2024-09-23 -- vite",
+    "build": "vite build",
+    "preview": "wrangler pages dev --compatibility-date=2024-09-23 dist",
+    "db:init": "wrangler d1 execute burgerbarn --file=schema.sql",
+    "db:seed": "wrangler d1 execute burgerbarn --file=seed.sql",
+    "db:init:prod": "wrangler d1 execute burgerbarn --remote --file=schema.sql",
+    "db:seed:prod": "wrangler d1 execute burgerbarn --remote --file=seed.sql"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.51.0",
+    "date-fns": "^3.6.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.40",
+    "tailwindcss": "^3.4.7",
+    "vite": "^5.3.5",
+    "wrangler": "^3.67.1"
+  }
+}
