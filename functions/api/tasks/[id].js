@@ -35,7 +35,7 @@ export async function onRequestPatch({ params, request, env, data }) {
     'UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?'
   ).bind(status, now, params.id).run()
 
-  if (status !== task.status) {
+  if (status !== task.status && data.user?.sub) {
     await env.DB.prepare(
       'INSERT INTO activity_log (id, task_id, user_id, action, old_value, new_value, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
     ).bind(

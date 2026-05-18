@@ -15,31 +15,24 @@ export default function BoardPage() {
     refetchInterval: 30_000,
   })
 
-  function handleTaskUpdated() {
-    qc.invalidateQueries({ queryKey: ['phases'] })
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-zinc-950">
       <Header />
 
       <main className="flex-1 overflow-hidden relative">
-        {/* Board */}
-        <div
-          className={`h-full overflow-y-auto px-4 md:px-8 py-6 transition-all duration-300 scrollbar-thin ${
-            selectedTaskId ? 'mr-[460px]' : ''
-          }`}
-        >
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-white">Strategic Roadmap</h2>
-              <p className="text-slate-400 text-sm mt-0.5">6-Phase Launch Plan · Click any task to view details and leave comments</p>
+        <div className={`h-full overflow-y-auto px-4 md:px-10 py-8 transition-all duration-200 scrollbar-thin ${
+          selectedTaskId ? 'md:mr-[420px]' : ''
+        }`}>
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-zinc-100 font-semibold text-lg">6-Phase Launch Plan</h1>
+              <p className="text-zinc-500 text-sm mt-1">Click any task to view details and update its status.</p>
             </div>
 
             {isLoading ? (
-              <div className="text-slate-500 text-sm py-12 text-center">Loading roadmap…</div>
+              <div className="text-zinc-700 text-sm py-16 text-center">Loading…</div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {phases.map(phase => (
                   <PhaseSection
                     key={phase.id}
@@ -53,12 +46,11 @@ export default function BoardPage() {
           </div>
         </div>
 
-        {/* Slide-out task panel */}
         {selectedTaskId && (
           <TaskPanel
             taskId={selectedTaskId}
             onClose={() => setSelectedTaskId(null)}
-            onUpdated={handleTaskUpdated}
+            onUpdated={() => qc.invalidateQueries({ queryKey: ['phases'] })}
           />
         )}
       </main>

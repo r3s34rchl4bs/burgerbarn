@@ -1,66 +1,53 @@
 import { useState } from 'react'
 import StatusBadge from './StatusBadge.jsx'
 
-const PHASE_COLORS = [
-  'border-amber-500',
-  'border-orange-500',
-  'border-yellow-500',
-  'border-lime-500',
-  'border-green-500',
-  'border-emerald-500',
-]
-
 export default function PhaseSection({ phase, selectedTaskId, onSelectTask }) {
   const [open, setOpen] = useState(true)
-  const pct = phase.progress.total > 0
-    ? Math.round((phase.progress.done / phase.progress.total) * 100)
-    : 0
-  const color = PHASE_COLORS[(phase.number - 1) % PHASE_COLORS.length]
+  const { done, total } = phase.progress
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
   return (
-    <div className={`bg-slate-900 rounded-xl border border-slate-800 border-l-4 ${color} overflow-hidden`}>
-      {/* Phase header */}
+    <div className="border border-zinc-800 rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-zinc-900/60 transition-colors text-left"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="text-slate-500 text-sm font-mono shrink-0">Phase {phase.number}</span>
-          <span className="text-white font-semibold truncate">{phase.title}</span>
-          <span className="text-slate-500 text-xs shrink-0 hidden sm:inline">{phase.months}</span>
+        <div className="flex items-center gap-4 min-w-0">
+          <span className="text-zinc-600 text-xs font-mono shrink-0 w-14">Phase {phase.number}</span>
+          <span className="text-zinc-100 font-medium text-sm truncate">{phase.title}</span>
+          <span className="text-zinc-600 text-xs shrink-0 hidden sm:block">{phase.months}</span>
         </div>
-        <div className="flex items-center gap-3 shrink-0 ml-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-20 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+        <div className="flex items-center gap-4 shrink-0 ml-6">
+          <div className="flex items-center gap-2">
+            <div className="w-16 h-px bg-zinc-800 relative">
               <div
-                className="h-full bg-brand-500 rounded-full transition-all"
+                className="absolute inset-y-0 left-0 bg-zinc-400 transition-all"
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="text-slate-400 text-xs">{phase.progress.done}/{phase.progress.total}</span>
+            <span className="text-zinc-600 text-xs tabular-nums">{done}/{total}</span>
           </div>
-          <span className="text-slate-500 text-sm">{open ? '▾' : '▸'}</span>
+          <span className="text-zinc-700 text-xs">{open ? '▾' : '▸'}</span>
         </div>
       </button>
 
-      {/* Task list */}
       {open && (
-        <div className="divide-y divide-slate-800/60">
+        <div className="divide-y divide-zinc-800/60 border-t border-zinc-800">
           {phase.tasks.map(task => (
             <button
               key={task.id}
               onClick={() => onSelectTask(selectedTaskId === task.id ? null : task.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-800/50 ${
-                selectedTaskId === task.id ? 'bg-slate-800' : ''
+              className={`w-full flex items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-zinc-900/60 ${
+                selectedTaskId === task.id ? 'bg-zinc-900' : ''
               }`}
             >
               <StatusBadge status={task.status} />
               <span className={`flex-1 text-sm ${
-                task.status === 'done' ? 'text-slate-500 line-through' : 'text-slate-200'
+                task.status === 'done' ? 'text-zinc-600 line-through' : 'text-zinc-300'
               }`}>
                 {task.title}
               </span>
-              <span className="text-slate-600 text-xs hidden sm:inline shrink-0">›</span>
+              <span className="text-zinc-700 text-xs shrink-0">›</span>
             </button>
           ))}
         </div>
