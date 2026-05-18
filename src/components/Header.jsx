@@ -28,11 +28,8 @@ export default function Header() {
             Accounts
           </Link>
         )}
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-semibold">
-            {initials}
-          </div>
-          <span className="text-gray-700 text-sm hidden sm:block">{user?.name}</span>
+        <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-semibold">
+          {initials}
         </div>
         <button
           onClick={handleLogout}
