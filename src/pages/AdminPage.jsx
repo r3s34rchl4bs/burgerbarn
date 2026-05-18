@@ -5,8 +5,8 @@ import { api } from '../lib/api.js'
 import Header from '../components/Header.jsx'
 
 export default function AdminPage() {
-  const navigate     = useNavigate()
-  const qc           = useQueryClient()
+  const navigate = useNavigate()
+  const qc       = useQueryClient()
   const [form, setForm]   = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
 
@@ -22,7 +22,7 @@ export default function AdminPage() {
       setForm({ name: '', email: '', password: '' })
       setError('')
     },
-    onError: err => setError(err.message),
+    onError: e => setError(e.message),
   })
 
   const removeUser = useMutation({
@@ -30,45 +30,39 @@ export default function AdminPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   })
 
-  async function handleAdd(e) {
-    e.preventDefault()
-    setError('')
-    addUser.mutate(form)
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
         <button
           onClick={() => navigate('/')}
-          className="text-slate-400 hover:text-white text-sm flex items-center gap-1 mb-6"
+          className="text-gray-400 hover:text-gray-700 text-sm mb-6 flex items-center gap-1 transition-colors"
         >
           ← Back to board
         </button>
 
-        <h2 className="text-xl font-bold text-white mb-6">Partners &amp; Accounts</h2>
+        <h2 className="text-gray-900 font-semibold text-lg mb-6">Partners & Accounts</h2>
 
         {/* User list */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 divide-y divide-slate-800 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-6 shadow-sm">
           {users.map(u => (
-            <div key={u.id} className="flex items-center justify-between px-4 py-3">
+            <div key={u.id} className="flex items-center justify-between px-4 py-3.5">
               <div>
-                <p className="text-white font-medium">{u.name}</p>
-                <p className="text-slate-400 text-sm">{u.email}</p>
+                <p className="text-gray-800 font-medium text-sm">{u.name}</p>
+                <p className="text-gray-400 text-xs">{u.email}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                <span className={`text-xs px-2 py-0.5 rounded border font-medium ${
                   u.role === 'owner'
-                    ? 'bg-brand-500/20 text-brand-400'
-                    : 'bg-slate-700 text-slate-300'
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-gray-100 text-gray-500 border-gray-200'
                 }`}>
                   {u.role}
                 </span>
                 {u.role !== 'owner' && (
                   <button
                     onClick={() => removeUser.mutate(u.id)}
-                    className="text-slate-500 hover:text-red-400 text-sm transition-colors"
+                    className="text-gray-400 hover:text-red-500 text-xs transition-colors"
                   >
                     Remove
                   </button>
@@ -79,42 +73,45 @@ export default function AdminPage() {
         </div>
 
         {/* Add partner */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-          <h3 className="text-white font-semibold mb-4">Add a partner</h3>
-          <form onSubmit={handleAdd} className="space-y-3">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-gray-800 font-medium text-sm mb-4">Add a partner</h3>
+          <form
+            onSubmit={e => { e.preventDefault(); setError(''); addUser.mutate(form) }}
+            className="space-y-3"
+          >
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Name</label>
+                <label className="block text-xs text-gray-500 mb-1">Name</label>
                 <input
                   type="text" required value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-gray-400"
                   placeholder="Partner name"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Email</label>
+                <label className="block text-xs text-gray-500 mb-1">Email</label>
                 <input
                   type="email" required value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-500"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-gray-400"
                   placeholder="partner@email.com"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Temporary password</label>
+              <label className="block text-xs text-gray-500 mb-1">Temporary password</label>
               <input
-                type="password" required minLength={8} value={form.password}
+                type="text" required minLength={8} value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-500"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-gray-400"
                 placeholder="Min 8 characters"
               />
             </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <button
               type="submit" disabled={addUser.isPending}
-              className="bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
+              className="bg-gray-900 hover:bg-gray-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
             >
               {addUser.isPending ? 'Adding…' : 'Add partner'}
             </button>
