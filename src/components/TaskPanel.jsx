@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { api } from '../lib/api.js'
@@ -16,9 +16,30 @@ function timeAgo(str) {
   catch { return '' }
 }
 
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function fileIcon(contentType) {
+  if (contentType?.startsWith('image/')) return '🖼'
+  if (contentType === 'application/pdf') return '📄'
+  if (contentType?.includes('word') || contentType?.includes('document')) return '📝'
+  if (contentType?.includes('sheet') || contentType?.includes('excel')) return '📊'
+  return '📎'
+}
+
+function isImage(contentType) {
+  return contentType?.startsWith('image/')
+}
+
 export default function TaskPanel({ taskId, onClose, onUpdated }) {
-  const qc = useQueryClient()
-  const [comment, setComment] = useState('')
+  const qc          = useQueryClient()
+  const fileInputRef = useRef(null)
+  const [comment, setComment]   = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   const { data: task, isLoading } = useQuery({
     queryKey: ['task', taskId],
@@ -50,6 +71,41 @@ export default function TaskPanel({ taskId, onClose, onUpdated }) {
       qc.invalidateQueries({ queryKey: ['activity'] })
     },
   })
+
+  const deleteAttachment = useMutation({
+    mutationFn: id => api.delete(`/api/attachments/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['task', taskId] }),
+  })
+
+  async function handleFileChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('File too large — max 10 MB')
+      return
+    }
+    setUploadError('')
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch(`/api/tasks/${taskId}/attachments`, {
+        method: 'POST',
+        body: form,
+        credentials: 'same-origin',
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        throw new Error(d.error || 'Upload failed')
+      }
+      qc.invalidateQueries({ queryKey: ['task', taskId] })
+    } catch (err) {
+      setUploadError(err.message)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   useEffect(() => {
     const handler = e => { if (e.key === 'Escape') onClose() }
@@ -114,6 +170,93 @@ export default function TaskPanel({ taskId, onClose, onUpdated }) {
                   <option key={u.id} value={u.id}>{u.name}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Attachments */}
+            <div className="px-6 py-5 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-gray-400 text-xs uppercase tracking-widest">
+                  Files {task.attachments?.length > 0 && `(${task.attachments.length})`}
+                </p>
+                <label className={`cursor-pointer text-xs border rounded px-2.5 py-1 transition-colors ${
+                  uploading
+                    ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    : 'border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700'
+                }`}>
+                  {uploading ? 'Uploading…' : '+ Attach file'}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    disabled={uploading}
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.ppt,.pptx,.zip"
+                    onChange={handleFileChange}
+                  />
+                </label>
+              </div>
+
+              {uploadError && (
+                <p className="text-red-500 text-xs mb-2">{uploadError}</p>
+              )}
+
+              {task.attachments?.length > 0 ? (
+                <div className="space-y-2">
+                  {task.attachments.map(a => (
+                    <div key={a.id} className="group">
+                      {isImage(a.content_type) ? (
+                        <div className="relative rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
+                          <a href={`/api/attachments/${a.id}`} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={`/api/attachments/${a.id}`}
+                              alt={a.filename}
+                              className="w-full max-h-48 object-cover"
+                            />
+                          </a>
+                          <div className="flex items-center justify-between px-3 py-2 bg-white border-t border-gray-100">
+                            <div className="min-w-0">
+                              <p className="text-gray-700 text-xs font-medium truncate">{a.filename}</p>
+                              <p className="text-gray-400 text-xs">{formatSize(a.size)} · {timeAgo(a.created_at)}</p>
+                            </div>
+                            <button
+                              onClick={() => deleteAttachment.mutate(a.id)}
+                              disabled={deleteAttachment.isPending}
+                              className="text-gray-300 hover:text-red-400 text-xs ml-2 transition-colors"
+                              title="Remove"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors">
+                          <span className="text-base shrink-0">{fileIcon(a.content_type)}</span>
+                          <div className="flex-1 min-w-0">
+                            <a
+                              href={`/api/attachments/${a.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-700 text-xs font-medium hover:text-gray-900 truncate block"
+                            >
+                              {a.filename}
+                            </a>
+                            <p className="text-gray-400 text-xs">{formatSize(a.size)} · {timeAgo(a.created_at)}</p>
+                          </div>
+                          <button
+                            onClick={() => deleteAttachment.mutate(a.id)}
+                            disabled={deleteAttachment.isPending}
+                            className="text-gray-300 hover:text-red-400 text-xs transition-colors shrink-0"
+                            title="Remove"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm">No files attached yet.</p>
+              )}
             </div>
 
             {/* Comments */}

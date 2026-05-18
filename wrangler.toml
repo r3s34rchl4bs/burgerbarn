@@ -6,3 +6,7 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "burgerbarn"
 database_id = "88b4c2ca-4c98-44f8-ba93-e6a2775dca6f"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "burgerbarn-files"

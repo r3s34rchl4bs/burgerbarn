@@ -20,7 +20,13 @@ export async function onRequestGet({ params, env }) {
     WHERE a.task_id = ? ORDER BY a.created_at DESC
   `).bind(params.id).all()
 
-  return json({ ...task, comments: comments.results, activity: activity.results })
+  const attachments = await env.DB.prepare(`
+    SELECT a.*, u.name as user_name
+    FROM attachments a JOIN users u ON a.user_id = u.id
+    WHERE a.task_id = ? ORDER BY a.created_at ASC
+  `).bind(params.id).all()
+
+  return json({ ...task, comments: comments.results, activity: activity.results, attachments: attachments.results })
 }
 
 export async function onRequestPatch({ params, request, env, data }) {
